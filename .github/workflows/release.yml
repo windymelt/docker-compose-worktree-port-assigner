@@ -15,30 +15,26 @@ jobs:
           - runner: ubuntu-24.04-arm
             target: aarch64-linux
     runs-on: ${{ matrix.runner }}
-    container:
-      image: alpine:latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install build dependencies
-        run: apk add --no-cache bash curl clang lld musl-dev openjdk17-jre-headless
-
-      - name: Install scala-cli
-        run: |
-          curl -sSLf https://scala-cli.virtuslab.org/get | bash
-          echo "$HOME/.local/share/coursier/bin" >> "$GITHUB_PATH"
 
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Build native binary
+      - name: Build in Alpine container
         run: |
-          scala-cli --power package . -o comport -f \
-            --native-mode release-fast \
-            --native-lto thin \
-            --native-gc commix \
-            --native-linking "-static"
+          docker run --rm -v "$PWD":/work -w /work alpine:latest sh -c '
+            apk add --no-cache bash curl clang lld musl-dev openjdk17-jre-headless &&
+            curl -fLo /usr/local/bin/coursier https://github.com/coursier/launchers/raw/master/coursier &&
+            chmod +x /usr/local/bin/coursier &&
+            eval "$(coursier setup --yes --apps scala-cli)" &&
+            scala-cli --power package . -o comport -f \
+              --native-mode release-fast \
+              --native-lto thin \
+              --native-gc commix \
+              --native-linking "-static"
+          '
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
