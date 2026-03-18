@@ -43,10 +43,9 @@ jobs:
 
       - name: Build native binary (macOS)
         if: runner.os == 'macOS'
-        run: |
+        run: | # in macOS, thin LTO is unstable or not supported
           scala-cli --power package . -o comport -f \
             --native-mode release-fast \
-            # in macOS, thin LTO is unstable or not supported
             --native-lto full \
             --native-gc commix
 
