@@ -36,7 +36,7 @@ jobs:
       - name: Build native binary
         run: |
           scala-cli --power package . -o comport -f \
-            --native-mode releaseFast \
+            --native-mode release-fast \
             --native-lto thin \
             --native-gc commix
 
