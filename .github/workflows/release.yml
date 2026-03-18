@@ -39,7 +39,8 @@ jobs:
           scala-cli --power package . -o comport -f \
             --native-mode release-fast \
             --native-lto thin \
-            --native-gc commix
+            --native-gc commix \
+            --native-clang /usr/bin/musl-clang
 
       - name: Build native binary (macOS)
         if: runner.os == 'macOS'
